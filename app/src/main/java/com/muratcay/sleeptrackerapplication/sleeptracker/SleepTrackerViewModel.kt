@@ -12,7 +12,7 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
 
     private var tonight = MutableLiveData<SleepNight?>()
 
-    private val nights = database.getAllNights() // Tüm geceler gelir.
+    val nights = database.getAllNights() // Tüm geceler gelir.
 
     val nightsString = Transformations.map(nights) { nights ->
         formatNights(nights, application.resources)
@@ -38,16 +38,28 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
     val navigateToSleepQuality: LiveData<SleepNight?>
         get() = mutableNavigateToSleepQuality
 
-    fun doneShowingSnackBar(){
+    private val mutableNavigateToSleepDataQuality: MutableLiveData<Long> = MutableLiveData()
+    val navigateToSleepDataQuality
+        get() = mutableNavigateToSleepDataQuality
+
+    init {
+        initializeTonight()
+    }
+
+    fun onSleepNightClicked(id: Long) {
+        mutableNavigateToSleepDataQuality.value = id
+    }
+
+    fun onSleepDataQualityNavigated() {
+        mutableNavigateToSleepDataQuality.value = null
+    }
+
+    fun doneShowingSnackBar() {
         mutableShowSnackBarEvent.value = false
     }
 
     fun doneNavigating() {
         mutableNavigateToSleepQuality.value = null
-    }
-
-    init {
-        initializeTonight()
     }
 
     private fun initializeTonight() {

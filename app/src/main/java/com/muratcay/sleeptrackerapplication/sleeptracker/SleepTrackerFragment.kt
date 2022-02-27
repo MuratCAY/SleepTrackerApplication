@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.muratcay.sleeptrackerapplication.R
 import com.muratcay.sleeptrackerapplication.base.BaseFragment
@@ -28,6 +29,45 @@ class SleepTrackerFragment : BaseFragment<FragmentSleepTrackerBinding>() {
 
         observeNavigateToSleepQuality()
         observeClearShowingSnackBar()
+        configureRecyclerView()
+        observeNavigateToSleepDataQuality()
+    }
+
+    private fun observeNavigateToSleepDataQuality() {
+        viewModel.navigateToSleepDataQuality.observe(viewLifecycleOwner) { night ->
+            night?.let {
+                findNavController().navigate(
+                    SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepDetailFragment(
+                        it
+                    )
+                )
+                viewModel.onSleepDataQualityNavigated()
+            }
+        }
+    }
+
+    private fun configureRecyclerView() {
+
+        val adapter = SleepNightAdapter(SleepNightListener { nightId ->
+            viewModel.onSleepNightClicked(nightId)
+        })
+
+        binding.recyclerView.adapter = adapter
+
+        viewModel.nights.observe(viewLifecycleOwner) {
+            it?.let {
+                adapter.addHeaderAndSubmitList(it)
+            }
+        }
+
+        val manager = GridLayoutManager(requireContext(), 3)
+        binding.recyclerView.layoutManager = manager
+        manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int) = when (position) {
+                0 -> 3
+                else -> 1
+            }
+        }
     }
 
     private fun observeClearShowingSnackBar() {
